@@ -318,12 +318,6 @@ func (pl *VolumeBinding) podHasPVCs(pod *v1.Pod) (bool, error) {
 		hasPVC = true
 		pvc, err := pl.PVCLister.PersistentVolumeClaims(pod.Namespace).Get(pvcName)
 		if err != nil {
-			// The error usually has already enough context ("persistentvolumeclaim "myclaim" not found"),
-			// but we can do better for generic ephemeral inline volumes where that situation
-			// is normal directly after creating a pod.
-			if isEphemeral && apierrors.IsNotFound(err) {
-				err = fmt.Errorf("waiting for ephemeral volume controller to create the persistentvolumeclaim %q", pvcName)
-			}
 			return hasPVC, err
 		}
 
@@ -351,6 +345,11 @@ func (pl *VolumeBinding) PreFilter(ctx context.Context, state *framework.CycleSt
 	logger := klog.FromContext(ctx)
 	// If pod does not reference any PVC, we don't need to do anything.
 	if hasPVC, err := pl.podHasPVCs(pod); err != nil {
+		if apierrors.IsNotFound(err) {
+			// The pod has PVCs, but some of them are not found. This is a transient error.
+			// The pod will be requeued when the PVCs are created.
+			return nil, framework.NewStatus(framework.Pending, err.Error())
+		}
 		return nil, framework.NewStatus(framework.UnschedulableAndUnresolvable, err.Error())
 	} else if !hasPVC {
 		state.Write(stateKey, &stateData{})

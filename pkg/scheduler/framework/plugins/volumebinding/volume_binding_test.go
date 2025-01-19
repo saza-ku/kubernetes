@@ -134,7 +134,7 @@ func TestVolumeBinding(t *testing.T) {
 				makeNode("node-a").Node,
 			},
 			pvcs:                []*v1.PersistentVolumeClaim{},
-			wantPreFilterStatus: framework.NewStatus(framework.UnschedulableAndUnresolvable, `persistentvolumeclaim "pvc-a" not found`),
+			wantPreFilterStatus: framework.NewStatus(framework.Pending, `persistentvolumeclaim "pvc-a" not found`),
 			wantFilterStatus: []*framework.Status{
 				nil,
 			},
@@ -151,7 +151,7 @@ func TestVolumeBinding(t *testing.T) {
 			pvcs: []*v1.PersistentVolumeClaim{
 				makePVC("pvc-a", waitSC.Name).withBoundPV("pv-a").PersistentVolumeClaim,
 			},
-			wantPreFilterStatus: framework.NewStatus(framework.UnschedulableAndUnresolvable, `persistentvolumeclaim "pvc-b" not found`),
+			wantPreFilterStatus: framework.NewStatus(framework.Pending, `persistentvolumeclaim "pvc-b" not found`),
 			wantFilterStatus: []*framework.Status{
 				nil,
 			},
@@ -244,7 +244,7 @@ func TestVolumeBinding(t *testing.T) {
 			nodes: []*v1.Node{
 				makeNode("node-a").Node,
 			},
-			wantPreFilterStatus: framework.NewStatus(framework.UnschedulableAndUnresolvable, `persistentvolumeclaim "pvc-a" not found`),
+			wantPreFilterStatus: framework.NewStatus(framework.Pending, `persistentvolumeclaim "pvc-a" not found`),
 			wantFilterStatus: []*framework.Status{
 				nil,
 			},
